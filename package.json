@@ -1,0 +1,15 @@
+{
+  "name": "magic-glasses",
+  "version": "1.0.0",
+  "description": "🕶️ 神奇眼鏡 - 兒童顏色混合學習遊戲",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["game", "color", "education", "kids"],
+  "author": "Chris Xiao",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
