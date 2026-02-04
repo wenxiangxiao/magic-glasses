@@ -539,6 +539,7 @@
 
         .action-btn:active { transform: scale(0.96); }
         .btn-clear { background: #F5F5F5; color: #757575; }
+        .btn-hint { background: linear-gradient(135deg, #FFB74D, #FF9800); color: white; }
         .btn-check { background: linear-gradient(135deg, #66BB6A, #43A047); color: white; }
         .btn-check:disabled { background: #E0E0E0; color: #9E9E9E; }
 
@@ -1172,6 +1173,7 @@
             <!-- 按鈕 -->
             <div class="actions">
                 <button class="action-btn btn-clear" onclick="clearAnswer()">🔄 清除</button>
+                <button class="action-btn btn-hint" onclick="showHint()">💡 提示</button>
                 <button class="action-btn btn-check" id="checkBtn" onclick="checkAnswer()">✅ 確認</button>
             </div>
         </div>
@@ -2073,6 +2075,24 @@
             $('answerPattern').className = 'pattern-layer' + (selectedPattern ? ' active ' + selectedPattern : '');
         }
 
+        function showHint() {
+            const colorCount = targetColorKey.split('+').length;
+            const colorName = COLOR_NAMES[targetColorKey] || targetColorKey;
+            const patternName = {
+                'dots': '圓點',
+                'stripes': '斜線',
+                'grid': '格子',
+                'zigzag': '交叉',
+                'circles': '圓圈'
+            }[targetPattern] || targetPattern;
+            
+            let hint = `💡 這題是「${colorName}」+ ${patternName}花紋\n`;
+            hint += `需要 ${colorCount} 種顏色混合`;
+            
+            $('hintMessage').textContent = hint;
+            setMammothState('gameMammoth', 'hint');
+        }
+        
         function clearAnswer() {
             selectedColors.clear();
             selectedPattern = null;
