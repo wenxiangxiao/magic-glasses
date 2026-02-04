@@ -1347,6 +1347,7 @@
         let selectedPattern = null;
         let targetColorKey = '';
         let targetPattern = '';
+        let lastQuestionKey = '';  // 記錄上一題，避免連續重複
 
         // 雙人
         let roomCode = null;
@@ -1671,22 +1672,33 @@
             clearAnswer();
             wrongCount = 0;
 
-            // 生成顏色組合
-            let colorCombo;
-            if (currentConfig.tripleColors && Math.random() < 0.3) {
-                // 三色混合
-                colorCombo = ['red', 'yellow', 'blue'];
-            } else if (currentConfig.mixColors && Math.random() < 0.6) {
-                // 雙色混合
-                const shuffled = [...availableColors].sort(() => Math.random() - 0.5);
-                colorCombo = shuffled.slice(0, 2);
-            } else {
-                // 單色
-                colorCombo = [availableColors[Math.floor(Math.random() * availableColors.length)]];
-            }
+            // 最多嘗試 10 次避免無限迴圈
+            let attempts = 0;
+            let newColorKey, newPattern;
+            
+            do {
+                // 生成顏色組合
+                let colorCombo;
+                if (currentConfig.tripleColors && Math.random() < 0.3) {
+                    // 三色混合
+                    colorCombo = ['red', 'yellow', 'blue'];
+                } else if (currentConfig.mixColors && Math.random() < 0.6) {
+                    // 雙色混合
+                    const shuffled = [...availableColors].sort(() => Math.random() - 0.5);
+                    colorCombo = shuffled.slice(0, 2);
+                } else {
+                    // 單色
+                    colorCombo = [availableColors[Math.floor(Math.random() * availableColors.length)]];
+                }
 
-            targetColorKey = colorCombo.sort().join('+');
-            targetPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+                newColorKey = colorCombo.sort().join('+');
+                newPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+                attempts++;
+            } while (newColorKey + '|' + newPattern === lastQuestionKey && attempts < 10);
+
+            targetColorKey = newColorKey;
+            targetPattern = newPattern;
+            lastQuestionKey = targetColorKey + '|' + targetPattern;
 
             // 顯示題目
             const color = COLORS[targetColorKey] || COLORS[colorCombo[0]];
