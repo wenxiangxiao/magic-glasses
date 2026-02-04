@@ -1668,11 +1668,20 @@
         }
 
         // ==================== 題目生成 ====================
+        // 容易混淆的顏色組合（視覺上太相近，不出題）
+        const CONFUSING_COLORS = [
+            'black+red+yellow',       // 深棕 - 跟棕色太像
+            'black+red+white+yellow', // 駝色 - 跟棕色太像
+            'black+red+white',        // 玫瑰棕 - 跟淺棕太像
+            'black+blue+red+white',   // 跟深棕太像
+            'black+blue+red+white+yellow', // 跟深棕太像
+        ];
+        
         function newQuestion() {
             clearAnswer();
             wrongCount = 0;
 
-            // 最多嘗試 10 次避免無限迴圈
+            // 最多嘗試 20 次避免無限迴圈
             let attempts = 0;
             let newColorKey, newPattern;
             
@@ -1694,7 +1703,7 @@
                 newColorKey = colorCombo.sort().join('+');
                 newPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
                 attempts++;
-            } while (newColorKey + '|' + newPattern === lastQuestionKey && attempts < 10);
+            } while ((newColorKey + '|' + newPattern === lastQuestionKey || CONFUSING_COLORS.includes(newColorKey)) && attempts < 20);
 
             targetColorKey = newColorKey;
             targetPattern = newPattern;
