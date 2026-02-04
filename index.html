@@ -472,6 +472,9 @@
             box-shadow: 0 3px 8px rgba(0,0,0,0.15);
             position: relative;
             flex-shrink: 0;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .draggable-chip.dragging { opacity: 0.5; transform: scale(0.9); }
@@ -1874,6 +1877,7 @@
         let dragData = null;
         let dragStartPos = null;  // 記錄拖曳起始位置
         const DRAG_THRESHOLD = 10;  // 移動超過這個距離才算拖曳
+        let practiceDragGhost = null;  // 練習模式拖曳（避免衝突用）
 
         let lastTouchTime = 0;
         
@@ -1887,6 +1891,7 @@
         }
         
         function onTouchStart(e) {
+            e.preventDefault();  // 防止瀏覽器預設觸控行為
             lastTouchTime = Date.now();
             onDragStart(e);
         }
