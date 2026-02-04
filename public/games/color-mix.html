@@ -1,0 +1,2263 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🕶️ 神奇眼鏡 - 顏色疊疊樂</title>
+    <style>
+        :root {
+            --red: #FF6B6B;
+            --yellow: #FFE066;
+            --blue: #74C0FC;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans TC', sans-serif;
+            background: linear-gradient(180deg, #FFF5E6 0%, #FFE4CC 100%);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            padding-top: max(10px, env(safe-area-inset-top));
+            height: 100dvh;
+        }
+
+        .hidden { display: none !important; }
+
+        /* === 大象角色 === */
+        .mammoth-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .mammoth {
+            font-size: 4rem;
+            line-height: 1;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+            animation: mammothIdle 3s ease-in-out infinite;
+            transition: all 0.3s;
+        }
+
+        .mammoth-small {
+            font-size: 2.5rem;
+        }
+
+        .mammoth-mini {
+            font-size: 1.8rem;
+        }
+
+        /* Idle 動畫 - 輕微晃動 */
+        @keyframes mammothIdle {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-3px) rotate(-2deg); }
+            75% { transform: translateY(-3px) rotate(2deg); }
+        }
+
+        /* 開心跳舞動畫 */
+        @keyframes mammothHappy {
+            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+            10% { transform: translateY(-15px) rotate(-10deg) scale(1.1); }
+            20% { transform: translateY(0) rotate(10deg) scale(1); }
+            30% { transform: translateY(-15px) rotate(-10deg) scale(1.1); }
+            40% { transform: translateY(0) rotate(10deg) scale(1); }
+            50% { transform: translateY(-15px) rotate(-10deg) scale(1.1); }
+            60% { transform: translateY(0) rotate(10deg) scale(1); }
+            70% { transform: translateY(-15px) rotate(0deg) scale(1.15); }
+            85% { transform: translateY(-8px) rotate(0deg) scale(1.1); }
+        }
+
+        .mammoth.happy {
+            animation: mammothHappy 1.2s ease-out;
+        }
+
+        /* 搖頭鼓勵動畫 */
+        @keyframes mammothSad {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            15% { transform: translateX(-8px) rotate(-5deg); }
+            30% { transform: translateX(8px) rotate(5deg); }
+            45% { transform: translateX(-8px) rotate(-5deg); }
+            60% { transform: translateX(8px) rotate(5deg); }
+            75% { transform: translateX(-4px) rotate(-2deg); }
+            90% { transform: translateX(4px) rotate(2deg); }
+        }
+
+        .mammoth.sad {
+            animation: mammothSad 0.8s ease-out;
+        }
+
+        /* 等待思考動畫 */
+        @keyframes mammothThink {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-5px) scale(1.03); }
+        }
+
+        .mammoth.thinking {
+            animation: mammothThink 1.5s ease-in-out infinite;
+        }
+
+        /* 大象對話泡泡 */
+        .mammoth-speech {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+
+        .mammoth-speech::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid white;
+        }
+
+        .mammoth-speech.show {
+            opacity: 1;
+        }
+
+        /* === 通用畫面 === */
+        .screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(180deg, #FFF5E6 0%, #FFE4CC 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 200;
+            overflow-y: auto;
+        }
+
+        .screen-title { font-size: 2rem; color: #5D4037; margin-bottom: 8px; }
+        .screen-sub { font-size: 1rem; color: #8D6E63; margin-bottom: 24px; text-align: center; }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn:active { transform: scale(0.96); }
+        .btn-green { background: linear-gradient(135deg, #81C784, #4CAF50); color: white; }
+        .btn-orange { background: linear-gradient(135deg, #FFB74D, #FF9800); color: white; }
+        .btn-blue { background: linear-gradient(135deg, #64B5F6, #2196F3); color: white; }
+        .btn-red { background: linear-gradient(135deg, #E57373, #F44336); color: white; }
+        .btn-purple { background: linear-gradient(135deg, #BA68C8, #9C27B0); color: white; }
+        .btn-gray { background: #E0E0E0; color: #666; }
+        .btn small { display: block; font-size: 0.8rem; font-weight: 400; opacity: 0.9; margin-top: 4px; }
+
+        /* === 遊戲頭部 === */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 0 4px;
+        }
+
+        .header-left, .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            background: white;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #5D4037;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .badge.highlight {
+            background: linear-gradient(135deg, #FFD54F, #FFB300);
+            color: #5D4037;
+        }
+
+        /* 連續答對星星 */
+        .streak-stars {
+            display: flex;
+            gap: 2px;
+        }
+
+        .streak-stars span {
+            font-size: 1.2rem;
+            opacity: 0.2;
+            transition: all 0.3s;
+        }
+
+        .streak-stars span.active {
+            opacity: 1;
+            animation: starPop 0.3s ease;
+        }
+
+        @keyframes starPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1); }
+        }
+
+        /* 計時器 */
+        .timer {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #5D4037;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .timer.warning { color: #FF9800; animation: pulse 0.5s infinite; }
+        .timer.danger { color: #F44336; animation: pulse 0.3s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* === VS 頭部（雙人） === */
+        .vs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 10px 16px;
+            border-radius: 16px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .player-info {
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .player-info.me .score { color: #4CAF50; }
+        .player-info.opp .score { color: #FF9800; }
+        .player-info .name { font-size: 0.8rem; color: #8D6E63; }
+        .player-info .score { font-size: 1.4rem; font-weight: 700; }
+        .player-info .status { font-size: 0.7rem; color: #4CAF50; }
+
+        .vs-text { font-size: 1rem; color: #BDBDBD; font-weight: 700; }
+
+        /* === 遊戲區 === */
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+        }
+
+        /* 關卡進度條 */
+        .level-progress {
+            background: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .level-progress .label {
+            font-size: 0.8rem;
+            color: #8D6E63;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: #E0E0E0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #81C784, #4CAF50);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* 卡片區域 */
+        .cards-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: stretch;
+        }
+
+        .card-wrapper {
+            flex: 1;
+            max-width: 155px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #8D6E63;
+            margin-bottom: 4px;
+        }
+
+        .big-card {
+            width: 100%;
+            aspect-ratio: 1;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .big-card.target { border: 4px solid #FFD54F; }
+        .big-card.answer { border: 4px dashed #BDBDBD; transition: all 0.3s; }
+        .big-card.answer.has-content { border-style: solid; border-color: #81C784; }
+        .big-card.answer.drag-over { border-color: #4CAF50; transform: scale(1.02); }
+
+        .card-fill {
+            position: absolute;
+            top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border-radius: 12px;
+            background: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        /* 特殊卡片分割效果 */
+        .card-fill.split {
+            background: none !important;
+        }
+
+        .card-fill.split::before,
+        .card-fill.split::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            border-radius: 12px;
+        }
+
+        .card-fill.split::before { left: 0; border-radius: 12px 0 0 12px; }
+        .card-fill.split::after { right: 0; border-radius: 0 12px 12px 0; }
+
+        /* 花紋層 */
+        .pattern-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .pattern-layer.active { opacity: 1; }
+        .pattern-layer.dots { background-image: radial-gradient(circle, rgba(255,255,255,0.8) 4px, transparent 4px); background-size: 14px 14px; }
+        .pattern-layer.stripes { background: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.6) 4px, rgba(255,255,255,0.6) 8px); }
+        .pattern-layer.grid { background-image: linear-gradient(rgba(255,255,255,0.6) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.6) 2px, transparent 2px); background-size: 14px 14px; }
+        .pattern-layer.zigzag { background: repeating-linear-gradient(135deg, transparent, transparent 3px, rgba(255,255,255,0.5) 3px, rgba(255,255,255,0.5) 6px), repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,0.5) 3px, rgba(255,255,255,0.5) 6px); }
+        .pattern-layer.circles { background-image: radial-gradient(circle, transparent 6px, rgba(255,255,255,0.5) 6px, rgba(255,255,255,0.5) 8px, transparent 8px); background-size: 20px 20px; }
+
+        .drop-hint {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #BDBDBD;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .big-card.has-content .drop-hint { opacity: 0; }
+
+        /* 提示訊息 */
+        .hint-message {
+            text-align: center;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: #5D4037;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 顏色提示列 */
+        .color-hints {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            color: #8D6E63;
+            flex-wrap: wrap;
+        }
+
+        .hint-item { display: flex; align-items: center; gap: 2px; }
+        .hint-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+        /* === 透明片區 === */
+        .filters-area {
+            background: white;
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        .filter-section { margin-bottom: 10px; }
+        .filter-section:last-child { margin-bottom: 0; }
+        .filter-title { font-size: 0.75rem; color: #8D6E63; font-weight: 600; margin-bottom: 6px; text-align: center; }
+
+        .filter-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .draggable-chip {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            cursor: grab;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            position: relative;
+            flex-shrink: 0;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .draggable-chip.dragging { opacity: 0.5; transform: scale(0.9); }
+        .draggable-chip.locked { opacity: 0.4; cursor: not-allowed; }
+
+        .draggable-chip.used::after {
+            content: '✓';
+            position: absolute;
+            top: -4px; right: -4px;
+            width: 18px; height: 18px;
+            background: #4CAF50;
+            border-radius: 50%;
+            color: white;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .draggable-chip.color-red { background: linear-gradient(145deg, #FF8A80, #FF5252); }
+        .draggable-chip.color-yellow { background: linear-gradient(145deg, #FFEE58, #FFD600); }
+        .draggable-chip.color-blue { background: linear-gradient(145deg, #64B5F6, #42A5F5); }
+        .draggable-chip.color-black { background: linear-gradient(145deg, #616161, #424242); }
+        .draggable-chip.color-white { background: linear-gradient(145deg, #FFFFFF, #EEEEEE); border: 2px solid #BDBDBD; }
+
+        .draggable-chip.pattern-chip { background: #EEE; overflow: hidden; }
+        .chip-pattern { width: 100%; height: 100%; border-radius: 12px; }
+        .chip-pattern.dots { background: #CCC; background-image: radial-gradient(circle, #777 3px, transparent 3px); background-size: 10px 10px; }
+        .chip-pattern.stripes { background: repeating-linear-gradient(45deg, #CCC, #CCC 3px, #999 3px, #999 6px); }
+        .chip-pattern.grid { background: #CCC; background-image: linear-gradient(#888 2px, transparent 2px), linear-gradient(90deg, #888 2px, transparent 2px); background-size: 10px 10px; }
+        .chip-pattern.zigzag { background: #CCC; background-image: repeating-linear-gradient(135deg, #888 0px, #888 2px, transparent 2px, transparent 4px); }
+        .chip-pattern.circles { background: #CCC; background-image: radial-gradient(circle, transparent 4px, #888 4px, #888 5px, transparent 5px); background-size: 14px 14px; }
+
+        .drag-ghost {
+            position: fixed;
+            width: 70px; height: 70px;
+            border-radius: 14px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.9;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        /* === 底部按鈕 === */
+        .actions {
+            display: flex;
+            gap: 10px;
+            padding-top: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .action-btn:active { transform: scale(0.96); }
+        .btn-clear { background: #F5F5F5; color: #757575; }
+        .btn-check { background: linear-gradient(135deg, #66BB6A, #43A047); color: white; }
+        .btn-check:disabled { background: #E0E0E0; color: #9E9E9E; }
+
+        /* === 彈窗 === */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 300;
+        }
+
+        .modal.show { opacity: 1; pointer-events: auto; }
+
+        .modal-content {
+            background: white;
+            padding: 28px 36px;
+            border-radius: 24px;
+            text-align: center;
+            transform: scale(0.8);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 300px;
+            width: 90%;
+        }
+
+        .modal.show .modal-content { transform: scale(1); }
+
+        .modal-emoji { font-size: 4rem; line-height: 1; }
+        .modal-title { font-size: 1.5rem; font-weight: 700; color: #333; margin-top: 8px; }
+        .modal-sub { font-size: 1rem; color: #666; margin-top: 4px; }
+        .modal-btn { margin-top: 20px; width: 100%; }
+
+        /* 慶祝動畫 */
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 400;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #FFD700;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* 房間碼輸入 */
+        .room-code-input {
+            display: flex;
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .room-code-input input {
+            width: 56px;
+            height: 56px;
+            font-size: 1.6rem;
+            text-align: center;
+            border: 3px solid #DDD;
+            border-radius: 12px;
+            font-weight: 700;
+            color: #5D4037;
+        }
+
+        .room-code-input input:focus {
+            outline: none;
+            border-color: #FF9800;
+        }
+
+        .room-code-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 8px;
+            color: #5D4037;
+            background: white;
+            padding: 16px 28px;
+            border-radius: 16px;
+            margin: 16px 0;
+        }
+
+        .waiting-text {
+            color: #8D6E63;
+            font-size: 1rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* === 教學模式樣式 === */
+        .tutorial-content {
+            width: 100%;
+            max-width: 400px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .tutorial-section {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .tutorial-section h3 {
+            font-size: 1.1rem;
+            color: #5D4037;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-formula {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            background: #FFF9F0;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .color-formula:last-child { margin-bottom: 0; }
+
+        .formula-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .formula-symbol {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #8D6E63;
+        }
+
+        .formula-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-left: 4px;
+        }
+
+        /* 互動練習區 */
+        .practice-area {
+            background: #FFF9F0;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .practice-dropzone {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 16px;
+            background: white;
+            border: 3px dashed #BDBDBD;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .practice-dropzone.has-color {
+            border-style: solid;
+            border-color: #81C784;
+        }
+
+        .practice-dropzone.drag-over {
+            border-color: #4CAF50;
+            transform: scale(1.02);
+        }
+
+        .practice-dropzone-fill {
+            position: absolute;
+            inset: 8px;
+            border-radius: 12px;
+            background: #F5F5F5;
+            transition: background 0.3s;
+        }
+
+        .practice-result {
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9rem;
+            color: #5D4037;
+            min-height: 32px;
+        }
+
+        .practice-chips {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .practice-chip {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .practice-chip:active { transform: scale(0.95); }
+        .practice-chip.selected { 
+            box-shadow: 0 0 0 3px #4CAF50, 0 2px 6px rgba(0,0,0,0.15);
+            transform: scale(1.05);
+        }
+        
+        .practice-pattern-layer {
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .practice-pattern-layer.active { opacity: 1; }
+        .practice-pattern-layer.dots { background-image: radial-gradient(circle, rgba(255,255,255,0.8) 4px, transparent 4px); background-size: 14px 14px; }
+        .practice-pattern-layer.stripes { background: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(255,255,255,0.6) 6px, rgba(255,255,255,0.6) 12px); }
+        .practice-pattern-layer.grid { background-image: linear-gradient(rgba(255,255,255,0.6) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,0.6) 2px, transparent 2px); background-size: 14px 14px; }
+
+        .practice-btn-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .practice-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* 花紋展示 */
+        .pattern-showcase {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .pattern-item {
+            text-align: center;
+        }
+
+        .pattern-demo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 6px;
+            border-radius: 12px;
+            background: #BDBDBD;
+        }
+
+        .pattern-demo.dots { background-image: radial-gradient(circle, #777 3px, transparent 3px); background-size: 10px 10px; }
+        .pattern-demo.stripes { background: repeating-linear-gradient(45deg, #BDBDBD, #BDBDBD 3px, #888 3px, #888 6px); }
+        .pattern-demo.grid { background-image: linear-gradient(#777 2px, transparent 2px), linear-gradient(90deg, #777 2px, transparent 2px); background-size: 10px 10px; }
+        .pattern-demo.zigzag { background-image: repeating-linear-gradient(135deg, #777 0px, #777 2px, transparent 2px, transparent 4px); }
+        .pattern-demo.circles { background-image: radial-gradient(circle, transparent 4px, #777 4px, #777 5px, transparent 5px); background-size: 12px 12px; }
+
+        .pattern-name {
+            font-size: 0.75rem;
+            color: #8D6E63;
+        }
+
+        /* 遊戲內大象位置 */
+        .game-mammoth {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 100;
+        }
+
+        @media (max-height: 700px) {
+            .game-mammoth {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== 開始畫面 ========== -->
+    <div class="screen" id="startScreen">
+        <div class="mammoth-container">
+            <div class="mammoth" id="startMammoth">🦣</div>
+            <div class="mammoth-speech" id="startSpeech">嗨！一起玩顏色遊戲吧！</div>
+        </div>
+        <div class="screen-title">🎨 神奇衣櫥</div>
+        <div class="screen-sub">用透明片疊出正確的顏色和花紋！</div>
+        <div class="btn-group">
+            <button class="btn btn-green" onclick="showModeSelect()">🎮 單人闘關<small>越來越難的挑戰</small></button>
+            <button class="btn btn-orange" onclick="showMultiMenu()">👥 雙人對戰<small>和朋友比賽！</small></button>
+            <button class="btn btn-blue" onclick="showFreePlay()">🎯 自由練習<small>選擇難度自由玩</small></button>
+            <button class="btn btn-purple" onclick="showTutorial()">📚 教學模式<small>學習顏色混合</small></button>
+        </div>
+    </div>
+
+    <!-- ========== 教學模式 ========== -->
+    <div class="screen hidden" id="tutorialScreen">
+        <div class="mammoth-container">
+            <div class="mammoth mammoth-small" id="tutorialMammoth">🦣</div>
+            <div class="mammoth-speech" id="tutorialSpeech">讓我教你顏色怎麼混合！</div>
+        </div>
+        <div class="screen-title">📚 教學模式</div>
+        
+        <div class="tutorial-content">
+            <!-- 顏色混合教學 -->
+            <div class="tutorial-section">
+                <h3>🎨 顏色混合魔法</h3>
+                <div class="color-formula">
+                    <div class="formula-dot" style="background: #FF5252"></div>
+                    <span class="formula-symbol">+</span>
+                    <div class="formula-dot" style="background: #42A5F5"></div>
+                    <span class="formula-symbol">=</span>
+                    <div class="formula-dot" style="background: #9C27B0"></div>
+                    <span class="formula-label">紫色</span>
+                </div>
+                <div class="color-formula">
+                    <div class="formula-dot" style="background: #FF5252"></div>
+                    <span class="formula-symbol">+</span>
+                    <div class="formula-dot" style="background: #FFD600"></div>
+                    <span class="formula-symbol">=</span>
+                    <div class="formula-dot" style="background: #FF9800"></div>
+                    <span class="formula-label">橙色</span>
+                </div>
+                <div class="color-formula">
+                    <div class="formula-dot" style="background: #FFD600"></div>
+                    <span class="formula-symbol">+</span>
+                    <div class="formula-dot" style="background: #42A5F5"></div>
+                    <span class="formula-symbol">=</span>
+                    <div class="formula-dot" style="background: #66BB6A"></div>
+                    <span class="formula-label">綠色</span>
+                </div>
+                <h3 style="margin-top: 16px;">⚫ 深淺變化</h3>
+                <div class="color-formula">
+                    <div class="formula-dot" style="background: #FF5252"></div>
+                    <span class="formula-symbol">+</span>
+                    <div class="formula-dot" style="background: #424242"></div>
+                    <span class="formula-symbol">=</span>
+                    <div class="formula-dot" style="background: #B71C1C"></div>
+                    <span class="formula-label">深紅</span>
+                </div>
+                <div class="color-formula">
+                    <div class="formula-dot" style="background: #FF5252"></div>
+                    <span class="formula-symbol">+</span>
+                    <div class="formula-dot" style="background: #FAFAFA; border: 1px solid #DDD;"></div>
+                    <span class="formula-symbol">=</span>
+                    <div class="formula-dot" style="background: #FFCDD2"></div>
+                    <span class="formula-label">粉紅</span>
+                </div>
+                <div class="color-formula">
+                    <div class="formula-dot" style="background: #42A5F5"></div>
+                    <span class="formula-symbol">+</span>
+                    <div class="formula-dot" style="background: #424242"></div>
+                    <span class="formula-symbol">=</span>
+                    <div class="formula-dot" style="background: #1A237E"></div>
+                    <span class="formula-label">深藍</span>
+                </div>
+            </div>
+
+            <!-- 互動練習 -->
+            <div class="tutorial-section">
+                <h3>🧪 試試看！</h3>
+                <div class="practice-area">
+                    <div class="practice-dropzone" id="practiceDropzone">
+                        <div class="practice-dropzone-fill" id="practiceDropzoneFill"></div>
+                        <div class="practice-pattern-layer" id="practicePatternLayer"></div>
+                        <span style="color:#BDBDBD; position:relative; z-index:1;" id="practiceHint">點選顏色和花紋</span>
+                    </div>
+                    <div class="practice-result" id="practiceResult">選擇顏色看看會變什麼色！</div>
+                    <div class="practice-chips" id="practiceChips">
+                        <div class="practice-chip" style="background: linear-gradient(145deg, #FF8A80, #FF5252)" data-color="red"></div>
+                        <div class="practice-chip" style="background: linear-gradient(145deg, #FFEE58, #FFD600)" data-color="yellow"></div>
+                        <div class="practice-chip" style="background: linear-gradient(145deg, #64B5F6, #42A5F5)" data-color="blue"></div>
+                        <div class="practice-chip" style="background: linear-gradient(145deg, #616161, #424242)" data-color="black"></div>
+                        <div class="practice-chip" style="background: linear-gradient(145deg, #FFF, #EEE); border: 1px solid #DDD;" data-color="white"></div>
+                    </div>
+                    <div class="practice-chips" id="practicePatterns" style="margin-top: 8px;">
+                        <div class="practice-chip practice-pattern-chip" data-pattern="dots"><div class="chip-pattern dots" style="width:100%;height:100%;border-radius:12px;pointer-events:none;"></div></div>
+                        <div class="practice-chip practice-pattern-chip" data-pattern="stripes"><div class="chip-pattern stripes" style="width:100%;height:100%;border-radius:12px;pointer-events:none;"></div></div>
+                        <div class="practice-chip practice-pattern-chip" data-pattern="grid"><div class="chip-pattern grid" style="width:100%;height:100%;border-radius:12px;pointer-events:none;"></div></div>
+                    </div>
+                    <div class="practice-btn-row">
+                        <button class="practice-btn btn-gray" onclick="clearPractice()">🔄 清除</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 花紋介紹 -->
+            <div class="tutorial-section">
+                <h3>✨ 花紋圖案</h3>
+                <p style="font-size: 0.85rem; color: #8D6E63; margin-bottom: 12px;">花紋會疊加在顏色上面喔！</p>
+                <div class="pattern-showcase">
+                    <div class="pattern-item">
+                        <div class="pattern-demo dots"></div>
+                        <div class="pattern-name">點點</div>
+                    </div>
+                    <div class="pattern-item">
+                        <div class="pattern-demo stripes"></div>
+                        <div class="pattern-name">斜條紋</div>
+                    </div>
+                    <div class="pattern-item">
+                        <div class="pattern-demo grid"></div>
+                        <div class="pattern-name">格子</div>
+                    </div>
+                    <div class="pattern-item">
+                        <div class="pattern-demo zigzag"></div>
+                        <div class="pattern-name">鋸齒</div>
+                    </div>
+                    <div class="pattern-item">
+                        <div class="pattern-demo circles"></div>
+                        <div class="pattern-name">圓圈</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-gray" style="margin-top:16px; max-width:280px; width:100%;" onclick="showScreen('startScreen')">← 返回主選單</button>
+    </div>
+
+    <!-- ========== 單人難度選擇 ========== -->
+    <div class="screen hidden" id="modeScreen">
+        <div class="mammoth-container">
+            <div class="mammoth mammoth-small">🦣</div>
+        </div>
+        <div class="screen-title">🎮 闘關模式</div>
+        <div class="screen-sub">從第1關開始，看你能闘到第幾關！</div>
+        <div class="btn-group">
+            <button class="btn btn-green" onclick="startAdventure()">🚀 開始闘關</button>
+            <button class="btn btn-gray" onclick="showScreen('startScreen')">← 返回</button>
+        </div>
+    </div>
+
+    <!-- ========== 自由練習難度選擇 ========== -->
+    <div class="screen hidden" id="freePlayScreen">
+        <div class="mammoth-container">
+            <div class="mammoth mammoth-small">🦣</div>
+        </div>
+        <div class="screen-title">🎯 自由練習</div>
+        <div class="screen-sub">選擇難度開始練習</div>
+        <div class="btn-group">
+            <button class="btn btn-green" onclick="startFreePlay('easy')">🌱 簡單<small>單色 + 基本花紋</small></button>
+            <button class="btn btn-orange" onclick="startFreePlay('medium')">🌟 普通<small>雙色混合</small></button>
+            <button class="btn btn-red" onclick="startFreePlay('hard')">🔥 困難<small>三色混合 + 更多花紋</small></button>
+            <button class="btn btn-gray" onclick="showScreen('startScreen')">← 返回</button>
+        </div>
+    </div>
+
+    <!-- ========== 雙人選單 ========== -->
+    <div class="screen hidden" id="multiScreen">
+        <div class="mammoth-container">
+            <div class="mammoth mammoth-small">🦣</div>
+        </div>
+        <div class="screen-title">👥 雙人對戰</div>
+        <div class="screen-sub">選擇對戰模式開始遊戲！</div>
+        <div style="margin: 16px 0; text-align: center;">
+            <div style="margin-bottom: 12px;">
+                <label style="color: #5D4037; font-weight: 600;">對戰模式：</label>
+                <select id="battleModeSelect" style="padding: 8px 16px; font-size: 1rem; border-radius: 8px; border: 2px solid #FFCC80;">
+                    <option value="race">⚡ 搶答模式</option>
+                    <option value="solo">🎯 各自答題</option>
+                </select>
+            </div>
+            <div style="font-size: 0.85rem; color: #8D6E63; margin-bottom: 12px;" id="battleModeDesc">
+                ⚡ 搶答：先答對得分，題目同步刷新
+            </div>
+            <div>
+                <label style="color: #5D4037; font-weight: 600;">題目數量：</label>
+                <select id="totalRoundsSelect" style="padding: 8px 16px; font-size: 1rem; border-radius: 8px; border: 2px solid #FFCC80;">
+                    <option value="5">5 題</option>
+                    <option value="10" selected>10 題</option>
+                    <option value="15">15 題</option>
+                    <option value="20">20 題</option>
+                    <option value="30">30 題</option>
+                </select>
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-green" onclick="createRoom()">🏠 建立房間</button>
+            <button class="btn btn-blue" onclick="showJoinRoom()">🚪 加入房間</button>
+            <button class="btn btn-gray" onclick="showScreen('startScreen')">← 返回</button>
+        </div>
+    </div>
+    <script>
+        document.getElementById('battleModeSelect')?.addEventListener('change', function() {
+            const desc = document.getElementById('battleModeDesc');
+            if (this.value === 'race') {
+                desc.textContent = '⚡ 搶答：先答對得分，題目同步刷新';
+            } else {
+                desc.textContent = '🎯 各自：各答各的，先答完全部題目獲勝';
+            }
+        });
+    </script>
+
+    <!-- ========== 等待畫面 ========== -->
+    <div class="screen hidden" id="waitingScreen">
+        <div class="mammoth-container">
+            <div class="mammoth mammoth-small thinking">🦣</div>
+        </div>
+        <div class="screen-title" id="waitingTitle">🏠 等待中</div>
+        <div class="screen-sub" id="waitingSub">房間碼：</div>
+        <div class="room-code-display" id="roomCodeDisplay">----</div>
+        <div class="waiting-text" id="waitingText">⏳ 等待對手加入...</div>
+        <button class="btn btn-gray" style="margin-top:20px" onclick="cancelWaiting()">取消</button>
+    </div>
+
+    <!-- ========== 加入房間 ========== -->
+    <div class="screen hidden" id="joinScreen">
+        <div class="mammoth-container">
+            <div class="mammoth mammoth-small">🦣</div>
+        </div>
+        <div class="screen-title">🚪 加入房間</div>
+        <div class="screen-sub">輸入 4 位數房間碼</div>
+        <div class="room-code-input">
+            <input type="tel" maxlength="1" id="code1" oninput="onCodeInput(1)">
+            <input type="tel" maxlength="1" id="code2" oninput="onCodeInput(2)">
+            <input type="tel" maxlength="1" id="code3" oninput="onCodeInput(3)">
+            <input type="tel" maxlength="1" id="code4" oninput="onCodeInput(4)">
+        </div>
+        <button class="btn btn-green" onclick="joinRoom()">加入遊戲</button>
+        <button class="btn btn-gray" style="margin-top:12px" onclick="showScreen('multiScreen')">← 返回</button>
+    </div>
+
+    <!-- ========== 遊戲主畫面 ========== -->
+    <div id="gameUI" class="hidden" style="display:flex;flex-direction:column;height:100%">
+        <!-- 單人/練習頭部 -->
+        <div class="game-header" id="soloHeader">
+            <div class="header-left">
+                <div class="badge">⭐ <span id="score">0</span></div>
+                <div class="streak-stars">
+                    <span id="s1">⭐</span><span id="s2">⭐</span><span id="s3">⭐</span><span id="s4">⭐</span><span id="s5">⭐</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="timer" id="timer"></div>
+                <div class="badge highlight" id="levelBadge">第 1 關</div>
+            </div>
+        </div>
+
+        <!-- 雙人頭部 -->
+        <div class="vs-header hidden" id="vsHeader">
+            <div class="player-info me">
+                <div class="name" id="myName">我</div>
+                <div class="score" id="myScore">0</div>
+                <div class="status" id="myStatus"></div>
+            </div>
+            <div class="vs-text">VS</div>
+            <div class="player-info opp">
+                <div class="name" id="oppName">對手</div>
+                <div class="score" id="oppScore">0</div>
+                <div class="status" id="oppStatus"></div>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <!-- 關卡進度 -->
+            <div class="level-progress" id="levelProgress">
+                <span class="label">關卡進度</span>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+                <span class="label" id="progressText">0/5</span>
+            </div>
+
+            <!-- 卡片區 -->
+            <div class="cards-row">
+                <div class="card-wrapper">
+                    <div class="card-label">📋 題目</div>
+                    <div class="big-card target">
+                        <div class="card-fill" id="targetFill">
+                            <div class="pattern-layer" id="targetPattern"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-wrapper">
+                    <div class="card-label">✏️ 作答</div>
+                    <div class="big-card answer" id="answerCard">
+                        <div class="card-fill" id="answerFill">
+                            <div class="pattern-layer" id="answerPattern"></div>
+                        </div>
+                        <div class="drop-hint">拖曳透明片<br>到這裡</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 大象 + 提示訊息 -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="mammoth mammoth-mini" id="gameMammoth">🦣</div>
+                <div class="hint-message" id="hintMessage" style="flex:1;">選擇透明片來配對！</div>
+            </div>
+
+            <!-- 顏色提示 -->
+            <div class="color-hints" id="colorHints">
+                <div class="hint-item"><span class="hint-dot" style="background:#FF5252"></span>+<span class="hint-dot" style="background:#42A5F5"></span>=<span class="hint-dot" style="background:#9C27B0"></span></div>
+                <div class="hint-item"><span class="hint-dot" style="background:#FF5252"></span>+<span class="hint-dot" style="background:#FFD600"></span>=<span class="hint-dot" style="background:#FF9800"></span></div>
+                <div class="hint-item"><span class="hint-dot" style="background:#FFD600"></span>+<span class="hint-dot" style="background:#42A5F5"></span>=<span class="hint-dot" style="background:#66BB6A"></span></div>
+            </div>
+
+            <!-- 透明片 -->
+            <div class="filters-area">
+                <div class="filter-section">
+                    <div class="filter-title">🎨 顏色透明片</div>
+                    <div class="filter-row" id="colorChips"></div>
+                </div>
+                <div class="filter-section">
+                    <div class="filter-title">✨ 花紋透明片</div>
+                    <div class="filter-row" id="patternChips"></div>
+                </div>
+            </div>
+
+            <!-- 按鈕 -->
+            <div class="actions">
+                <button class="action-btn btn-clear" onclick="clearAnswer()">🔄 清除</button>
+                <button class="action-btn btn-check" id="checkBtn" onclick="checkAnswer()">✅ 確認</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 結果彈窗 ========== -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <div class="modal-emoji" id="resultEmoji">🎉</div>
+            <div class="mammoth" id="resultMammoth" style="font-size: 3rem;">🦣</div>
+            <div class="modal-title" id="resultTitle">太棒了！</div>
+            <div class="modal-sub" id="resultSub">+10 分</div>
+        </div>
+    </div>
+
+    <!-- ========== 關卡完成彈窗 ========== -->
+    <div class="modal" id="levelModal">
+        <div class="modal-content">
+            <div class="mammoth happy" style="font-size: 4rem;">🦣</div>
+            <div class="modal-title" id="levelTitle">第 1 關完成！</div>
+            <div class="modal-sub" id="levelSub">準備好挑戰下一關了嗎？</div>
+            <button class="btn btn-green modal-btn" onclick="nextLevel()">繼續挑戰 →</button>
+        </div>
+    </div>
+
+    <!-- ========== 遊戲結束彈窗 ========== -->
+    <div class="modal" id="endModal">
+        <div class="modal-content">
+            <div class="modal-emoji" id="endEmoji">🏆</div>
+            <div class="mammoth happy" style="font-size: 3rem;">🦣</div>
+            <div class="modal-title" id="endTitle">遊戲結束</div>
+            <div class="modal-sub" id="endSub">最終分數：0</div>
+            <button class="btn btn-green modal-btn" onclick="backToStart()">返回主選單</button>
+        </div>
+    </div>
+
+    <!-- ========== 彩帶容器 ========== -->
+    <div class="confetti" id="confetti"></div>
+
+    <script>
+        // ==================== 配置 ====================
+        const COLORS = {
+            // 基本色
+            red: '#FF5252',
+            yellow: '#FFD600',
+            blue: '#42A5F5',
+            black: '#424242',     // 黑（深灰，不要純黑）
+            white: '#FAFAFA',     // 白（米白，不要純白）
+            // 雙色混合
+            'blue+red': '#9C27B0',       // 紫
+            'red+yellow': '#FF9800',     // 橙
+            'blue+yellow': '#66BB6A',    // 綠
+            'black+red': '#B71C1C',      // 深紅/酒紅
+            'black+yellow': '#827717',   // 深黃/橄欖
+            'black+blue': '#1A237E',     // 深藍/海軍藍
+            'red+white': '#FFCDD2',      // 淺紅/粉
+            'white+yellow': '#FFF9C4',   // 淺黃/奶油
+            'blue+white': '#BBDEFB',     // 淺藍/天空藍
+            'black+white': '#9E9E9E',    // 灰
+            // 三色混合
+            'blue+red+yellow': '#8D6E63',    // 棕
+            'black+blue+red': '#311B92',     // 深紫
+            'black+red+yellow': '#5D4037',   // 深棕/咖啡
+            'black+blue+yellow': '#33691E',  // 深綠/森林綠
+            'blue+red+white': '#E1BEE7',     // 淺紫/薰衣草
+            'red+white+yellow': '#FFE0B2',   // 淺橙/蜜桃
+            'blue+white+yellow': '#C8E6C9',  // 淺綠/薄荷
+            'black+red+white': '#A1887F',    // 玫瑰棕
+            'black+white+yellow': '#A1887F', // 卡其
+            'black+blue+white': '#78909C',   // 藍灰
+            // 四色混合
+            'black+blue+red+yellow': '#4E342E',  // 深棕
+            'blue+red+white+yellow': '#D7CCC8',  // 淺棕/米色
+            'black+blue+red+white': '#5D4037',   // 摩卡
+            'black+blue+white+yellow': '#607D8B', // 石板灰
+            'black+red+white+yellow': '#8D6E63', // 駝色
+            // 五色混合
+            'black+blue+red+white+yellow': '#6D4C41' // 深駝色
+        };
+
+        const COLOR_NAMES = {
+            red: '紅色',
+            yellow: '黃色',
+            blue: '藍色',
+            black: '黑色',
+            white: '白色',
+            'blue+red': '紫色',
+            'red+yellow': '橙色',
+            'blue+yellow': '綠色',
+            'blue+red+yellow': '棕色',
+            'black+red': '深紅',
+            'black+yellow': '橄欖色',
+            'black+blue': '深藍',
+            'red+white': '粉紅',
+            'white+yellow': '奶油色',
+            'blue+white': '天空藍',
+            'black+white': '灰色',
+            // 三色組合
+            'black+red+yellow': '深橙',
+            'black+blue+red': '深紫',
+            'black+blue+yellow': '深綠',
+            'blue+red+white': '淺紫',
+            'red+white+yellow': '淺橙',
+            'blue+white+yellow': '淺綠',
+            'black+red+white': '玫瑰灰',
+            'black+white+yellow': '卡其色',
+            'black+blue+white': '藍灰色',
+            // 四色組合
+            'black+blue+red+yellow': '深棕',
+            'blue+red+white+yellow': '淺棕',
+            'black+blue+red+white': '摩卡色',
+            'black+blue+white+yellow': '石板灰',
+            'black+red+white+yellow': '駝色',
+            // 五色
+            'black+blue+red+white+yellow': '深駝色'
+        };
+
+        const PATTERNS = ['dots', 'stripes', 'grid', 'zigzag', 'circles'];
+
+        // 關卡配置
+        const LEVELS = [
+            { colors: ['red', 'yellow', 'blue'], patterns: ['dots'], questionsPerLevel: 3, timeLimit: 0 },
+            { colors: ['red', 'yellow', 'blue'], patterns: ['dots', 'stripes'], questionsPerLevel: 4, timeLimit: 0 },
+            { colors: ['red', 'yellow', 'blue'], patterns: ['dots', 'stripes', 'grid'], questionsPerLevel: 4, timeLimit: 30 },
+            { colors: ['red', 'yellow', 'blue'], patterns: ['dots', 'stripes', 'grid'], questionsPerLevel: 5, timeLimit: 25, mixColors: true },
+            { colors: ['red', 'yellow', 'blue'], patterns: ['dots', 'stripes', 'grid', 'zigzag'], questionsPerLevel: 5, timeLimit: 20, mixColors: true },
+            { colors: ['red', 'yellow', 'blue', 'black'], patterns: PATTERNS.slice(0, 4), questionsPerLevel: 5, timeLimit: 18, mixColors: true },
+            { colors: ['red', 'yellow', 'blue', 'black', 'white'], patterns: PATTERNS, questionsPerLevel: 6, timeLimit: 15, mixColors: true },
+            { colors: ['red', 'yellow', 'blue', 'black', 'white'], patterns: PATTERNS, questionsPerLevel: 6, timeLimit: 12, mixColors: true, tripleColors: true },
+            { colors: ['red', 'yellow', 'blue', 'black', 'white'], patterns: PATTERNS, questionsPerLevel: 7, timeLimit: 10, mixColors: true, tripleColors: true },
+            { colors: ['red', 'yellow', 'blue', 'black', 'white'], patterns: PATTERNS, questionsPerLevel: 8, timeLimit: 8, mixColors: true, tripleColors: true }
+        ];
+
+        // 大象說話內容
+        const MAMMOTH_SPEECHES = {
+            start: ['嗨！一起玩顏色遊戲吧！', '今天想混什麼顏色呢？', '準備好變魔法了嗎？'],
+            correct: ['太棒了！🎉', '你好厲害！', '完美！✨', '讚讚讚！', 'Wow！超強！'],
+            wrong: ['再想想看～', '別灰心，再試一次！', '提示：仔細看顏色喔', '加油，你可以的！'],
+            streak: ['燃起來了！🔥', '連續答對！太厲害！', '勢不可擋！⚡'],
+            tutorial: ['讓我教你顏色怎麼混合！', '紅+藍=紫色喔！', '試試看吧！']
+        };
+
+        // 提示訊息
+        const CORRECT_MESSAGES = [
+            "🎉 太棒了！", "✨ 完美！", "👏 漂亮！", "🌟 厲害！", "💪 超強！",
+            "🔥 燃燒吧！", "⚡ 快如閃電！", "🚀 無人能擋！", "👑 王者風範！"
+        ];
+
+        const WRONG_MESSAGES = [
+            "🤔 再想想看...", "💭 顏色對嗎？", "🎨 花紋呢？", "👀 仔細看看題目",
+            "💪 加油，你可以的！", "🌈 想想顏色怎麼混合"
+        ];
+
+        const STREAK_MESSAGES = [
+            "", "🔥 連續 2 題！", "⚡ 連續 3 題！", "💥 連續 4 題！", "👑 連續 5 題！超神！"
+        ];
+
+        // ==================== 遊戲狀態 ====================
+        let gameMode = 'adventure'; // adventure / freeplay / multi
+        let currentLevel = 1;
+        let questionsInLevel = 0;
+        let score = 0;
+        let streak = 0;
+        let wrongCount = 0;
+        let timeLeft = 0;
+        let timerInterval = null;
+
+        let availableColors = ['red', 'yellow', 'blue'];
+        let availablePatterns = ['dots', 'stripes', 'grid'];
+        let currentConfig = LEVELS[0];
+
+        let selectedColors = new Set();
+        let selectedPattern = null;
+        let targetColorKey = '';
+        let targetPattern = '';
+        let lastQuestionKey = '';  // 記錄上一題，避免連續重複
+
+        // 雙人
+        let roomCode = null;
+        let playerId = null;
+        let playerIndex = 0;
+        let pollInterval = null;
+        let gameStarted = false;
+        let currentRound = 0;
+
+        // 教學練習
+        let practiceColors = new Set();
+        let practicePattern = null;
+
+        // DOM
+        const $ = id => document.getElementById(id);
+        const answerCard = $('answerCard');
+
+        // ==================== 大象動畫控制 ====================
+        function setMammothState(elementId, state) {
+            const mammoth = $(elementId);
+            if (!mammoth) return;
+            
+            mammoth.classList.remove('happy', 'sad', 'thinking');
+            if (state) {
+                mammoth.classList.add(state);
+            }
+        }
+
+        function showMammothSpeech(speechId, category) {
+            const speech = $(speechId);
+            if (!speech) return;
+            
+            const messages = MAMMOTH_SPEECHES[category];
+            if (!messages) return;
+            
+            speech.textContent = messages[Math.floor(Math.random() * messages.length)];
+            speech.classList.add('show');
+            
+            setTimeout(() => {
+                speech.classList.remove('show');
+            }, 2500);
+        }
+
+        function triggerMammothReaction(isCorrect) {
+            const gameMammoth = $('gameMammoth');
+            const resultMammoth = $('resultMammoth');
+            
+            if (isCorrect) {
+                setMammothState('gameMammoth', 'happy');
+                if (resultMammoth) resultMammoth.classList.add('happy');
+                
+                setTimeout(() => {
+                    setMammothState('gameMammoth', null);
+                    if (resultMammoth) resultMammoth.classList.remove('happy');
+                }, 1200);
+            } else {
+                setMammothState('gameMammoth', 'sad');
+                if (resultMammoth) resultMammoth.classList.add('sad');
+                
+                setTimeout(() => {
+                    setMammothState('gameMammoth', null);
+                    if (resultMammoth) resultMammoth.classList.remove('sad');
+                }, 800);
+            }
+        }
+
+        // ==================== 音效 ====================
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        document.addEventListener('touchstart', () => {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }, { once: true });
+
+        function playSound(freq, duration = 0.15, type = 'sine', volume = 0.4, delay = 0) {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            try {
+                const t = audioCtx.currentTime + delay;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.value = freq;
+                osc.type = type;
+                gain.gain.setValueAtTime(volume, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + duration);
+                osc.start(t);
+                osc.stop(t + duration);
+            } catch(e) {}
+        }
+
+        function playSuccess() {
+            [523, 587, 659, 698, 784, 880, 988, 1047].forEach((f, i) => {
+                playSound(f, 0.2, 'sine', 0.35, i * 0.08);
+            });
+            setTimeout(() => {
+                playSound(1047, 0.3, 'sine', 0.3);
+                playSound(1319, 0.3, 'sine', 0.25);
+                playSound(1568, 0.3, 'sine', 0.2);
+            }, 350);
+        }
+
+        function playWrong() {
+            playSound(300, 0.15, 'triangle', 0.3);
+            setTimeout(() => playSound(200, 0.2, 'triangle', 0.25), 100);
+        }
+
+        function playDrop() {
+            playSound(1200, 0.08, 'sine', 0.3);
+            playSound(1600, 0.05, 'sine', 0.15, 0.03);
+        }
+
+        function playTick() {
+            playSound(800, 0.05, 'sine', 0.2);
+        }
+
+        function playLevelUp() {
+            [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => {
+                playSound(f, 0.25, 'sine', 0.3, i * 0.1);
+            });
+        }
+
+        // ==================== 畫面控制 ====================
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+            if (id) $(id).classList.remove('hidden');
+            
+            // 顯示開始畫面時播放大象動畫
+            if (id === 'startScreen') {
+                setTimeout(() => showMammothSpeech('startSpeech', 'start'), 500);
+            }
+        }
+
+        function showModeSelect() { showScreen('modeScreen'); }
+        function showFreePlay() { showScreen('freePlayScreen'); }
+        function showMultiMenu() { showScreen('multiScreen'); }
+
+        function showTutorial() {
+            showScreen('tutorialScreen');
+            setTimeout(() => showMammothSpeech('tutorialSpeech', 'tutorial'), 300);
+            clearPractice();
+            initPractice();
+        }
+
+        function showJoinRoom() {
+            showScreen('joinScreen');
+            for (let i = 1; i <= 4; i++) $('code' + i).value = '';
+            $('code1').focus();
+        }
+
+        function onCodeInput(n) {
+            if ($('code' + n).value && n < 4) $('code' + (n + 1)).focus();
+        }
+
+        // ==================== 教學練習區（簡化版，只用點擊） ====================
+        function initPractice() {
+            // 綁定顏色點擊
+            document.querySelectorAll('#practiceChips .practice-chip').forEach(chip => {
+                chip.onclick = function() {
+                    const color = this.dataset.color;
+                    if (!color) return;
+                    if (practiceColors.has(color)) {
+                        practiceColors.delete(color);
+                        this.classList.remove('selected');
+                    } else {
+                        practiceColors.add(color);
+                        this.classList.add('selected');
+                    }
+                    updatePractice();
+                };
+            });
+            
+            // 綁定花紋點擊
+            document.querySelectorAll('#practicePatterns .practice-chip').forEach(chip => {
+                chip.onclick = function() {
+                    const pattern = this.dataset.pattern;
+                    if (!pattern) return;
+                    // 移除其他花紋的選中
+                    document.querySelectorAll('#practicePatterns .practice-chip').forEach(c => c.classList.remove('selected'));
+                    if (practicePattern === pattern) {
+                        practicePattern = null;
+                    } else {
+                        practicePattern = pattern;
+                        this.classList.add('selected');
+                    }
+                    updatePractice();
+                };
+            });
+        }
+
+        function updatePractice() {
+            const fill = $('practiceDropzoneFill');
+            const patternLayer = $('practicePatternLayer');
+            const hint = $('practiceHint');
+            const result = $('practiceResult');
+            
+            // 更新花紋
+            if (patternLayer) {
+                patternLayer.className = 'practice-pattern-layer' + (practicePattern ? ' active ' + practicePattern : '');
+            }
+            
+            if (practiceColors.size > 0) {
+                const colorKey = [...practiceColors].sort().join('+');
+                const color = COLORS[colorKey] || COLORS[[...practiceColors][0]];
+                const name = COLOR_NAMES[colorKey] || COLOR_NAMES[[...practiceColors][0]] || colorKey;
+                
+                fill.style.background = color || '#888';
+                hint.style.display = 'none';
+                
+                let resultText = `<strong>${name}</strong>`;
+                if (practicePattern) {
+                    const patternNames = { dots: '點點', stripes: '斜條紋', grid: '格子' };
+                    resultText += ` + ${patternNames[practicePattern]}`;
+                }
+                result.innerHTML = resultText;
+            } else {
+                fill.style.background = '#F5F5F5';
+                hint.style.display = '';
+                result.textContent = '點選顏色試試看！';
+            }
+        }
+
+        function clearPractice() {
+            practiceColors.clear();
+            practicePattern = null;
+            // 清除所有選中狀態
+            document.querySelectorAll('.practice-chip').forEach(c => c.classList.remove('selected'));
+            updatePractice();
+        }
+
+        // ==================== 單人闘關模式 ====================
+        function startAdventure() {
+            gameMode = 'adventure';
+            currentLevel = 1;
+            questionsInLevel = 0;
+            score = 0;
+            streak = 0;
+            loadLevelConfig();
+            setupGameUI();
+            showScreen(null);
+            $('gameUI').classList.remove('hidden');
+            $('soloHeader').classList.remove('hidden');
+            $('vsHeader').classList.add('hidden');
+            $('levelProgress').classList.remove('hidden');
+            newQuestion();
+        }
+
+        function loadLevelConfig() {
+            currentConfig = LEVELS[Math.min(currentLevel - 1, LEVELS.length - 1)];
+            availableColors = currentConfig.colors;
+            availablePatterns = currentConfig.patterns;
+            updateLevelUI();
+        }
+
+        function updateLevelUI() {
+            $('levelBadge').textContent = `第 ${currentLevel} 關`;
+            $('progressText').textContent = `${questionsInLevel}/${currentConfig.questionsPerLevel}`;
+            $('progressFill').style.width = `${(questionsInLevel / currentConfig.questionsPerLevel) * 100}%`;
+        }
+
+        function setupGameUI() {
+            // 設置可用的顏色卡片
+            const colorRow = $('colorChips');
+            colorRow.innerHTML = availableColors.map(c => 
+                `<div class="draggable-chip color-${c}" data-type="color" data-value="${c}"></div>`
+            ).join('');
+
+            // 設置可用的花紋卡片
+            const patternRow = $('patternChips');
+            patternRow.innerHTML = availablePatterns.map(p => 
+                `<div class="draggable-chip pattern-chip" data-type="pattern" data-value="${p}"><div class="chip-pattern ${p}"></div></div>`
+            ).join('');
+
+            initDrag();
+            updateScoreUI();
+            
+            // 重置大象狀態
+            setMammothState('gameMammoth', null);
+        }
+
+        function updateScoreUI() {
+            $('score').textContent = score;
+            for (let i = 1; i <= 5; i++) {
+                $('s' + i).classList.toggle('active', i <= streak);
+            }
+        }
+
+        // ==================== 自由練習模式 ====================
+        function startFreePlay(difficulty) {
+            gameMode = 'freeplay';
+            score = 0;
+            streak = 0;
+
+            if (difficulty === 'easy') {
+                availableColors = ['red', 'yellow', 'blue'];
+                availablePatterns = ['dots', 'stripes'];
+                currentConfig = { mixColors: false, timeLimit: 0 };
+            } else if (difficulty === 'medium') {
+                availableColors = ['red', 'yellow', 'blue'];
+                availablePatterns = ['dots', 'stripes', 'grid'];
+                currentConfig = { mixColors: true, timeLimit: 0 };
+            } else {
+                availableColors = ['red', 'yellow', 'blue', 'black', 'white'];
+                availablePatterns = PATTERNS;
+                currentConfig = { mixColors: true, tripleColors: true, timeLimit: 15 };
+            }
+
+            setupGameUI();
+            showScreen(null);
+            $('gameUI').classList.remove('hidden');
+            $('soloHeader').classList.remove('hidden');
+            $('vsHeader').classList.add('hidden');
+            $('levelProgress').classList.add('hidden');
+            $('levelBadge').textContent = difficulty === 'easy' ? '簡單' : difficulty === 'medium' ? '普通' : '困難';
+            newQuestion();
+        }
+
+        // ==================== 題目生成 ====================
+        function newQuestion() {
+            clearAnswer();
+            wrongCount = 0;
+
+            // 最多嘗試 10 次避免無限迴圈
+            let attempts = 0;
+            let newColorKey, newPattern;
+            
+            do {
+                // 生成顏色組合
+                let colorCombo;
+                if (currentConfig.tripleColors && Math.random() < 0.3) {
+                    // 三色混合
+                    colorCombo = ['red', 'yellow', 'blue'];
+                } else if (currentConfig.mixColors && Math.random() < 0.6) {
+                    // 雙色混合
+                    const shuffled = [...availableColors].sort(() => Math.random() - 0.5);
+                    colorCombo = shuffled.slice(0, 2);
+                } else {
+                    // 單色
+                    colorCombo = [availableColors[Math.floor(Math.random() * availableColors.length)]];
+                }
+
+                newColorKey = colorCombo.sort().join('+');
+                newPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+                attempts++;
+            } while (newColorKey + '|' + newPattern === lastQuestionKey && attempts < 10);
+
+            targetColorKey = newColorKey;
+            targetPattern = newPattern;
+            lastQuestionKey = targetColorKey + '|' + targetPattern;
+
+            // 顯示題目
+            const color = COLORS[targetColorKey] || COLORS[colorCombo[0]];
+            $('targetFill').style.background = color;
+            $('targetPattern').className = 'pattern-layer active ' + targetPattern;
+
+            $('hintMessage').textContent = '選擇透明片來配對！';
+            
+            // 大象進入思考狀態
+            setMammothState('gameMammoth', 'thinking');
+
+            // 計時器
+            if (currentConfig.timeLimit > 0) {
+                startTimer(currentConfig.timeLimit);
+            } else {
+                $('timer').textContent = '';
+            }
+        }
+
+        // ==================== 計時器 ====================
+        function startTimer(seconds) {
+            clearInterval(timerInterval);
+            timeLeft = seconds;
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft <= 5 && timeLeft > 0) {
+                    playTick();
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const timer = $('timer');
+            timer.textContent = `⏱️ ${timeLeft}`;
+            timer.className = 'timer' + (timeLeft <= 3 ? ' danger' : timeLeft <= 5 ? ' warning' : '');
+        }
+
+        function handleTimeout() {
+            playWrong();
+            streak = 0;
+            updateScoreUI();
+            triggerMammothReaction(false);
+            showResult(false, '⏰ 時間到！');
+            setTimeout(newQuestion, 1500);
+        }
+
+        // ==================== 答案檢查 ====================
+        function checkAnswer() {
+            if (selectedColors.size === 0) {
+                $('hintMessage').textContent = '👆 先選擇顏色透明片！';
+                return;
+            }
+
+            clearInterval(timerInterval);
+
+            const answerKey = [...selectedColors].sort().join('+');
+            const correct = answerKey === targetColorKey && selectedPattern === targetPattern;
+
+            if (correct) {
+                // 答對
+                streak++;
+                const bonus = Math.min(streak - 1, 4) * 5;
+                const timeBonus = timeLeft > 0 ? Math.floor(timeLeft / 2) : 0;
+                const points = 10 + bonus + timeBonus;
+                score += points;
+                questionsInLevel++;
+                
+                updateScoreUI();
+                updateLevelUI();
+
+                const msg = streak > 1 ? STREAK_MESSAGES[Math.min(streak, 5)] : CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)];
+                playSuccess();
+                triggerMammothReaction(true);
+                showResult(true, msg, `+${points} 分`);
+
+                if (streak >= 5) showConfetti();
+
+                setTimeout(() => {
+                    if (gameMode === 'adventure' && questionsInLevel >= currentConfig.questionsPerLevel) {
+                        showLevelComplete();
+                    } else {
+                        newQuestion();
+                    }
+                }, 1300);
+            } else {
+                // 答錯
+                wrongCount++;
+                streak = 0;
+                updateScoreUI();
+
+                let hint = WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)];
+                if (wrongCount >= 3) {
+                    hint = `💡 提示：需要 ${targetColorKey.split('+').length} 種顏色`;
+                }
+
+                playWrong();
+                triggerMammothReaction(false);
+                showResult(false, hint);
+
+                // 重啟計時器
+                if (currentConfig.timeLimit > 0) {
+                    setTimeout(() => startTimer(currentConfig.timeLimit), 1500);
+                }
+            }
+        }
+
+        function showResult(success, title, sub = '') {
+            $('resultEmoji').textContent = success ? '🎉' : '🤔';
+            $('resultTitle').textContent = title;
+            $('resultSub').textContent = sub;
+            
+            const resultMammoth = $('resultMammoth');
+            resultMammoth.className = 'mammoth ' + (success ? 'happy' : 'sad');
+            
+            $('resultModal').classList.add('show');
+            setTimeout(() => $('resultModal').classList.remove('show'), 1200);
+        }
+
+        function showLevelComplete() {
+            playLevelUp();
+            showConfetti();
+            $('levelTitle').textContent = `第 ${currentLevel} 關完成！`;
+            $('levelSub').textContent = `得分：${score} 分`;
+            $('levelModal').classList.add('show');
+        }
+
+        function nextLevel() {
+            $('levelModal').classList.remove('show');
+            currentLevel++;
+            questionsInLevel = 0;
+
+            if (currentLevel > LEVELS.length) {
+                // 全部通關
+                showGameEnd('🏆', '恭喜通關！', `最終分數：${score} 分`);
+            } else {
+                loadLevelConfig();
+                setupGameUI();
+                newQuestion();
+            }
+        }
+
+        function showGameEnd(emoji, title, sub) {
+            $('endEmoji').textContent = emoji;
+            $('endTitle').textContent = title;
+            $('endSub').textContent = sub;
+            $('endModal').classList.add('show');
+        }
+
+        function backToStart() {
+            $('endModal').classList.remove('show');
+            $('levelModal').classList.remove('show');
+            $('gameUI').classList.add('hidden');
+            clearInterval(timerInterval);
+            clearInterval(pollInterval);
+            showScreen('startScreen');
+        }
+
+        // ==================== 彩帶效果 ====================
+        function showConfetti() {
+            const container = $('confetti');
+            container.innerHTML = '';
+            const colors = ['#FF6B6B', '#FFE066', '#74C0FC', '#81C784', '#FFB74D', '#BA68C8'];
+
+            for (let i = 0; i < 50; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = Math.random() * 100 + '%';
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDelay = Math.random() * 0.5 + 's';
+                piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+                container.appendChild(piece);
+            }
+
+            setTimeout(() => container.innerHTML = '', 3000);
+        }
+
+        // ==================== 拖曳操作 ====================
+        let dragGhost = null;
+        let dragData = null;
+        let dragStartPos = null;  // 記錄拖曳起始位置
+        const DRAG_THRESHOLD = 10;  // 移動超過這個距離才算拖曳
+        let practiceDragGhost = null;  // 練習模式拖曳（避免衝突用）
+
+        let lastTouchTime = 0;
+        
+        function initDrag() {
+            document.querySelectorAll('.draggable-chip').forEach(chip => {
+                chip.removeEventListener('touchstart', onTouchStart);
+                chip.removeEventListener('mousedown', onMouseStart);
+                chip.addEventListener('touchstart', onTouchStart, { passive: false });
+                chip.addEventListener('mousedown', onMouseStart);
+            });
+        }
+        
+        function onTouchStart(e) {
+            e.preventDefault();  // 防止瀏覽器預設觸控行為
+            lastTouchTime = Date.now();
+            onDragStart(e);
+        }
+        
+        function onMouseStart(e) {
+            // 如果剛觸發過 touch，跳過 mouse 事件
+            if (Date.now() - lastTouchTime < 500) return;
+            onDragStart(e);
+        }
+
+        document.addEventListener('touchmove', onDragMove, { passive: false });
+        document.addEventListener('mousemove', onDragMove);
+        document.addEventListener('touchend', onTouchEnd);
+        document.addEventListener('mouseup', onMouseEnd);
+        
+        function onTouchEnd(e) {
+            lastTouchTime = Date.now();
+            onDragEnd(e);
+        }
+        
+        function onMouseEnd(e) {
+            if (Date.now() - lastTouchTime < 500) return;
+            onDragEnd(e);
+        }
+
+        function onDragStart(e) {
+            if (practiceDragGhost) return; // 避免衝突
+            const chip = e.currentTarget;
+            if (chip.classList.contains('locked')) return;
+
+            const pos = e.touches ? e.touches[0] : e;
+            dragStartPos = { x: pos.clientX, y: pos.clientY };
+            dragData = { type: chip.dataset.type, value: chip.dataset.value, chip };
+            // 先不創建 ghost，等確認是拖曳才創建
+        }
+
+        function onDragMove(e) {
+            if (practiceDragGhost) return;
+            if (!dragData || !dragStartPos) return;
+            
+            const pos = e.touches ? e.touches[0] : e;
+            const dx = pos.clientX - dragStartPos.x;
+            const dy = pos.clientY - dragStartPos.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // 如果還沒創建 ghost，檢查是否超過閾值
+            if (!dragGhost) {
+                if (distance < DRAG_THRESHOLD) return;
+                // 超過閾值，創建 ghost，開始拖曳
+                e.preventDefault();
+                dragData.chip.classList.add('dragging');
+                
+                dragGhost = document.createElement('div');
+                dragGhost.className = 'drag-ghost';
+                if (dragData.type === 'color') {
+                    dragGhost.style.background = getComputedStyle(dragData.chip).background;
+                } else {
+                    dragGhost.style.background = '#EEE';
+                    const pat = document.createElement('div');
+                    pat.className = 'chip-pattern ' + dragData.value;
+                    pat.style.borderRadius = '14px';
+                    dragGhost.appendChild(pat);
+                }
+                document.body.appendChild(dragGhost);
+            }
+            
+            e.preventDefault();
+            dragGhost.style.left = pos.clientX + 'px';
+            dragGhost.style.top = pos.clientY + 'px';
+
+            const rect = answerCard.getBoundingClientRect();
+            const over = pos.clientX >= rect.left && pos.clientX <= rect.right && 
+                         pos.clientY >= rect.top && pos.clientY <= rect.bottom;
+            answerCard.classList.toggle('drag-over', over);
+        }
+
+        function onDragEnd(e) {
+            if (practiceDragGhost) return;
+            
+            // 如果沒有拖曳數據，直接返回
+            if (!dragData) return;
+            
+            // 如果沒有創建 ghost（沒有真正拖曳），當作點擊處理
+            if (!dragGhost) {
+                // 切換選擇狀態
+                const type = dragData.type;
+                const value = dragData.value;
+                const chip = dragData.chip;
+                
+                if (type === 'color') {
+                    if (chip.classList.contains('used')) {
+                        selectedColors.delete(value);
+                        chip.classList.remove('used');
+                    } else {
+                        selectedColors.add(value);
+                        chip.classList.add('used');
+                    }
+                } else {
+                    if (chip.classList.contains('used')) {
+                        selectedPattern = null;
+                        chip.classList.remove('used');
+                    } else {
+                        document.querySelectorAll('.pattern-chip').forEach(c => c.classList.remove('used'));
+                        selectedPattern = value;
+                        chip.classList.add('used');
+                    }
+                }
+                updateAnswerDisplay();
+                playDrop();
+                
+                dragData = null;
+                dragStartPos = null;
+                return;
+            }
+
+            // 有拖曳，處理放置
+            const pos = e.changedTouches ? e.changedTouches[0] : e;
+            const rect = answerCard.getBoundingClientRect();
+            const over = pos.clientX >= rect.left && pos.clientX <= rect.right && 
+                         pos.clientY >= rect.top && pos.clientY <= rect.bottom;
+
+            if (over) {
+                applyChip(dragData.type, dragData.value);
+                dragData.chip.classList.add('used');
+                playDrop();
+            }
+
+            dragData.chip.classList.remove('dragging');
+            answerCard.classList.remove('drag-over');
+            dragGhost.remove();
+            dragGhost = null;
+            dragData = null;
+            dragStartPos = null;
+        }
+
+        function applyChip(type, value) {
+            if (type === 'color') {
+                selectedColors.add(value);
+            } else {
+                document.querySelectorAll('.pattern-chip').forEach(c => c.classList.remove('used'));
+                selectedPattern = value;
+            }
+            updateAnswerDisplay();
+        }
+
+        function updateAnswerDisplay() {
+            const hasContent = selectedColors.size > 0 || selectedPattern;
+            answerCard.classList.toggle('has-content', hasContent);
+
+            if (selectedColors.size > 0) {
+                const colorKey = [...selectedColors].sort().join('+');
+                const color = COLORS[colorKey] || COLORS[[...selectedColors][0]];
+                $('answerFill').style.background = color;
+            } else {
+                $('answerFill').style.background = '#F5F5F5';
+            }
+
+            $('answerPattern').className = 'pattern-layer' + (selectedPattern ? ' active ' + selectedPattern : '');
+        }
+
+        function clearAnswer() {
+            selectedColors.clear();
+            selectedPattern = null;
+            document.querySelectorAll('.draggable-chip').forEach(c => c.classList.remove('used'));
+            $('answerFill').style.background = '#F5F5F5';
+            $('answerPattern').className = 'pattern-layer';
+            answerCard.classList.remove('has-content');
+        }
+
+        // ==================== 雙人遊戲 ====================
+        async function createRoom() {
+            try {
+                const totalRounds = parseInt($('totalRoundsSelect')?.value || '10');
+                const battleMode = $('battleModeSelect')?.value || 'race';
+                const res = await fetch('/api/game/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playerName: '玩家1', mode: 'hard', totalRounds, battleMode })
+                }).then(r => r.json());
+
+                if (res.success) {
+                    roomCode = res.code;
+                    playerId = res.playerId;
+                    playerIndex = 0;
+                    $('waitingTitle').textContent = '🏠 房間已建立';
+                    $('waitingSub').textContent = '告訴朋友房間碼：';
+                    $('roomCodeDisplay').textContent = roomCode;
+                    $('waitingText').textContent = '⏳ 等待對手加入...';
+                    showScreen('waitingScreen');
+                    startPolling();
+                }
+            } catch (e) {
+                alert('建立房間失敗');
+            }
+        }
+
+        async function joinRoom() {
+            const code = $('code1').value + $('code2').value + $('code3').value + $('code4').value;
+            if (code.length !== 4) return alert('請輸入完整房間碼');
+
+            try {
+                const res = await fetch('/api/game/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, playerName: '玩家2' })
+                }).then(r => r.json());
+
+                if (res.error) return alert(res.error);
+
+                roomCode = code;
+                playerId = res.playerId;
+                playerIndex = 1;
+                $('waitingTitle').textContent = '🚪 已加入房間';
+                $('waitingSub').textContent = '';
+                $('roomCodeDisplay').textContent = '準備中...';
+                $('waitingText').textContent = '⏳ 等待遊戲開始...';
+                showScreen('waitingScreen');
+                startPolling();
+            } catch (e) {
+                alert('加入房間失敗');
+            }
+        }
+
+        function cancelWaiting() {
+            clearInterval(pollInterval);
+            roomCode = null;
+            showScreen('multiScreen');
+        }
+
+        function startPolling() {
+            gameStarted = false;
+            currentRound = 0;
+
+            pollInterval = setInterval(async () => {
+                try {
+                    const room = await fetch(`/api/game/room/${roomCode}`).then(r => r.json());
+                    if (room.error) return;
+
+                    if (room.status === 'ready' && playerIndex === 0) {
+                        await fetch(`/api/game/start/${roomCode}`, { method: 'POST' });
+                    } else if (room.status === 'playing') {
+                        if (!gameStarted) {
+                            gameStarted = true;
+                            gameMode = 'multi';
+                            availableColors = ['red', 'yellow', 'blue', 'black', 'white'];
+                            availablePatterns = ['dots', 'stripes', 'grid'];
+                            currentConfig = { mixColors: true, timeLimit: 0 };
+                            setupGameUI();
+                            showScreen(null);
+                            $('gameUI').classList.remove('hidden');
+                            $('soloHeader').classList.add('hidden');
+                            $('vsHeader').classList.remove('hidden');
+                            $('levelProgress').classList.add('hidden');
+                            $('myName').textContent = room.players[playerIndex]?.name || '我';
+                            $('oppName').textContent = room.players[1 - playerIndex]?.name || '對手';
+                        }
+
+                        // 更新分數
+                        const me = room.players[playerIndex];
+                        const opp = room.players[1 - playerIndex];
+                        $('myScore').textContent = me?.score || 0;
+                        $('oppScore').textContent = opp?.score || 0;
+                        $('myStatus').textContent = me?.answered ? '✓' : '';
+                        $('oppStatus').textContent = opp?.answered ? '✓' : '';
+
+                        // 載入題目
+                        const myChallenge = room.battleMode === 'solo' 
+                            ? room.players[playerIndex]?.challenge 
+                            : room.challenge;
+                        const myRound = room.battleMode === 'solo'
+                            ? (room.players[playerIndex]?.round || 0)
+                            : room.round;
+                            
+                        if (myChallenge && myRound !== currentRound) {
+                            currentRound = myRound;
+                            clearAnswer();
+                            targetColorKey = myChallenge.colorKey;
+                            targetPattern = myChallenge.pattern;
+                            $('targetFill').style.background = myChallenge.color || COLORS[targetColorKey];
+                            $('targetPattern').className = 'pattern-layer active ' + targetPattern;
+                            
+                            if (room.battleMode === 'solo') {
+                                $('hintMessage').textContent = `第 ${myRound}/${room.totalRounds} 題`;
+                            } else {
+                                $('hintMessage').textContent = `第 ${room.round}/${room.totalRounds} 題 - 快搶答！`;
+                            }
+                        }
+                    } else if (room.status === 'finished') {
+                        clearInterval(pollInterval);
+                        const isWinner = room.winner === room.players[playerIndex]?.name;
+                        showGameEnd(
+                            isWinner ? '🏆' : '😢',
+                            isWinner ? '你贏了！' : '再接再厲！',
+                            `獲勝者：${room.winner}`
+                        );
+                    }
+                } catch (e) {}
+            }, 500);
+        }
+
+        // 雙人模式答題
+        const originalCheckAnswer = checkAnswer;
+        checkAnswer = async function() {
+            if (gameMode !== 'multi') {
+                originalCheckAnswer();
+                return;
+            }
+
+            if (selectedColors.size === 0) {
+                $('hintMessage').textContent = '👆 先選擇顏色透明片！';
+                return;
+            }
+
+            const answerKey = [...selectedColors].sort().join('+');
+
+            try {
+                const res = await fetch(`/api/game/answer/${roomCode}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playerId, colorKey: answerKey, pattern: selectedPattern })
+                }).then(r => r.json());
+
+                if (res.error) return;
+
+                if (res.correct) {
+                    playSuccess();
+                    triggerMammothReaction(true);
+                    showResult(true, '🎉 正確！', `${(res.timeUsed / 1000).toFixed(1)} 秒`);
+                } else {
+                    playWrong();
+                    triggerMammothReaction(false);
+                    showResult(false, '🤔 再試試！');
+                }
+
+                // 清除選擇並載入新題目（solo 模式）
+                setTimeout(() => {
+                    clearAnswer();
+                    // solo 模式：直接用返回的新題目
+                    if (res.newChallenge) {
+                        targetColorKey = res.newChallenge.colorKey;
+                        targetPattern = res.newChallenge.pattern;
+                        $('targetFill').style.background = res.newChallenge.color || COLORS[targetColorKey];
+                        $('targetPattern').className = 'pattern-layer active ' + targetPattern;
+                        $('hintMessage').textContent = `第 ${res.playerRound}/${res.totalRounds} 題`;
+                    }
+                }, 1500);
+            } catch (e) {}
+        };
+
+        // ==================== 初始化 ====================
+        // 開場動畫
+        setTimeout(() => {
+            showMammothSpeech('startSpeech', 'start');
+        }, 800);
+    </script>
+</body>
+</html>
